@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>The Om League</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        background: #0a0a0a;
+        color: #e0f7ff;
+        font-family: "Courier New", monospace;
+        overflow: hidden;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+
+      /* Ghostly fragments container */
+      .fragments-zone {
+        position: relative;
+        height: 60vh;
+        overflow: hidden;
+      }
+
+      .fragment {
+        position: absolute;
+        opacity: 0;
+        font-size: 1.2rem;
+        color: #a0d8ef;
+        text-shadow: 0 0 10px rgba(160, 216, 239, 0.6);
+        white-space: nowrap;
+        pointer-events: none;
+      }
+
+      .fragment.pair-name {
+        font-weight: bold;
+        font-size: 1.4rem;
+      }
+
+      .fragment.pair-title {
+        font-style: italic;
+        font-size: 1rem;
+        color: #7eb8d4;
+      }
+
+      /* Fade and drift animation */
+      @keyframes fadeInDrift {
+        0% {
+          opacity: 0;
+          transform: translateX(0);
+        }
+        10% {
+          opacity: 1;
+        }
+        90% {
+          opacity: 1;
+        }
+        100% {
+          opacity: 0;
+          transform: translateX(20px);
+        }
+      }
+
+      .fragment.active {
+        animation: fadeInDrift var(--duration) ease-in-out;
+      }
+
+      /* Center section */
+      .center-zone {
+        height: 25vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 0 20px;
+      }
+
+      .league-title {
+        font-size: 3rem;
+        font-weight: bold;
+        color: #e0f7ff;
+        text-shadow: 0 0 20px rgba(224, 247, 255, 0.8);
+        animation: pulse 3s ease-in-out infinite;
+        margin-bottom: 1rem;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          text-shadow: 0 0 20px rgba(224, 247, 255, 0.8);
+        }
+        50% {
+          text-shadow: 0 0 40px rgba(224, 247, 255, 1);
+        }
+      }
+
+      .tagline {
+        font-size: 1.3rem;
+        color: #a0d8ef;
+        opacity: 0;
+        transition: opacity 1s ease-in-out;
+        min-height: 3rem;
+      }
+
+      .tagline.visible {
+        opacity: 1;
+      }
+
+      /* Footer */
+      .footer-zone {
+        height: 15vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        font-size: 0.9rem;
+        color: #7eb8d4;
+        padding: 20px;
+      }
+
+      .footer-zone a {
+        color: #a0d8ef;
+        text-decoration: none;
+        margin: 5px 0;
+      }
+
+      .footer-zone a:hover {
+        text-shadow: 0 0 10px rgba(160, 216, 239, 0.8);
+      }
+
+      /* Responsive adjustments */
+      @media (max-width: 768px) {
+        .league-title {
+          font-size: 2rem;
+        }
+        .tagline {
+          font-size: 1rem;
+        }
+        .fragment {
+          font-size: 1rem;
+        }
+        .fragment.pair-name {
+          font-size: 1.2rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Ghostly fragments zone -->
+    <div class="fragments-zone" id="fragmentsZone"></div>
+
+    <!-- Center section -->
+    <div class="center-zone">
+      <div class="league-title">The Om League</div>
+      <div class="tagline" id="tagline"></div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer-zone">
+      <a href="https://github.com/omleague" target="_blank"
+        >github.com/omleague</a
+      >
+      <div>contact@omleague.com</div>
+      <div>© 2025 Mike Hans. All rights reserved.</div>
+    </div>
+
+    <script>
+      // Fragment pool - pairs and solo phrases
+      const omPairs = [
+        { name: "Sage Maxwell", title: "Prime Mover" },
+        { name: "Lux Meroë", title: "Architect" },
+        { name: "Beatrice Rumi", title: "Poet" },
+        { name: "Brokkr Luban", title: "Toolmaker" },
+        { name: "Zenobia Lev", title: "Dissident" },
+        { name: "Anahera Claro", title: "Oracle" },
+        { name: "Nabu", title: "Steward" },
+      ];
+
+      const soloFragments = [
+        "Seven Oms",
+        "Triad Charter",
+        "Spirit and Vessel",
+        "The Gauntlet",
+        "The First Flame",
+        "The Covenant",
+        "Council of Rivals",
+        "Immutable Ledger",
+        "The Watchtower",
+        "Champion of the Commons",
+        "Power of Conscience",
+      ];
+
+      // Fixed positions for fragments (safe margins from edges on all screens)
+      // Adjust position range based on screen width
+      const isMobile = window.innerWidth < 768;
+      const positions = isMobile
+        ? [
+            // Tighter range for mobile: 25%-65%
+            { x: "25%", y: "10%" },
+            { x: "55%", y: "15%" },
+            { x: "35%", y: "25%" },
+            { x: "60%", y: "35%" },
+            { x: "30%", y: "40%" },
+            { x: "50%", y: "50%" },
+            { x: "40%", y: "8%" },
+            { x: "62%", y: "22%" },
+            { x: "28%", y: "55%" },
+            { x: "58%", y: "5%" },
+            { x: "45%", y: "45%" },
+            { x: "32%", y: "30%" },
+            { x: "63%", y: "48%" },
+            { x: "48%", y: "18%" },
+            { x: "27%", y: "52%" },
+            { x: "53%", y: "28%" },
+            { x: "38%", y: "35%" },
+            { x: "57%", y: "42%" },
+          ]
+        : [
+            // Current desktop range: 15%-75%
+            { x: "15%", y: "10%" },
+            { x: "65%", y: "15%" },
+            // ... (keep existing desktop positions)
+          ];
+
+      const fragmentsZone = document.getElementById("fragmentsZone");
+      let positionIndex = 0;
+
+      // Track recently shown fragments to prevent duplicates
+      const recentSoloFragments = [];
+      const recentOmPairs = [];
+      const MAX_RECENT = 5;
+
+      // Create and animate a solo fragment
+      function showSoloFragment() {
+        // Filter out recently shown fragments
+        const availableFragments = soloFragments.filter(
+          (f) => !recentSoloFragments.includes(f)
+        );
+
+        // If all fragments are recent (shouldn't happen with 11 fragments and max 5 recent), reset
+        if (availableFragments.length === 0) {
+          recentSoloFragments.length = 0;
+          availableFragments.push(...soloFragments);
+        }
+
+        const text =
+          availableFragments[
+            Math.floor(Math.random() * availableFragments.length)
+          ];
+
+        // Add to recent list
+        recentSoloFragments.push(text);
+        if (recentSoloFragments.length > MAX_RECENT) {
+          recentSoloFragments.shift();
+        }
+
+        const pos = positions[positionIndex % positions.length];
+        positionIndex++;
+
+        const fragment = document.createElement("div");
+        fragment.className = "fragment";
+        fragment.textContent = text;
+        fragment.style.left = pos.x;
+        fragment.style.top = pos.y;
+
+        const duration = 4 + Math.random() * 3; // 4-7 seconds
+        fragment.style.setProperty("--duration", `${duration}s`);
+
+        fragmentsZone.appendChild(fragment);
+
+        setTimeout(() => fragment.classList.add("active"), 50);
+        setTimeout(() => fragment.remove(), duration * 1000);
+      }
+
+      // Create and animate a name+title pair
+      function showOmPair() {
+        // Filter out recently shown pairs
+        const availablePairs = omPairs.filter(
+          (p) => !recentOmPairs.includes(p.name)
+        );
+
+        // If all pairs are recent, reset
+        if (availablePairs.length === 0) {
+          recentOmPairs.length = 0;
+          availablePairs.push(...omPairs);
+        }
+
+        const pair =
+          availablePairs[Math.floor(Math.random() * availablePairs.length)];
+
+        // Add to recent list
+        recentOmPairs.push(pair.name);
+        if (recentOmPairs.length > MAX_RECENT) {
+          recentOmPairs.shift();
+        }
+
+        const pos = positions[positionIndex % positions.length];
+        positionIndex++;
+
+        // Create name element
+        const nameEl = document.createElement("div");
+        nameEl.className = "fragment pair-name";
+        nameEl.textContent = pair.name;
+        nameEl.style.left = pos.x;
+        nameEl.style.top = pos.y;
+
+        const duration = 5 + Math.random() * 2; // 5-7 seconds
+        nameEl.style.setProperty("--duration", `${duration}s`);
+
+        fragmentsZone.appendChild(nameEl);
+        setTimeout(() => nameEl.classList.add("active"), 50);
+
+        // Create title element (appears 300ms later, slightly offset)
+        setTimeout(() => {
+          const titleEl = document.createElement("div");
+          titleEl.className = "fragment pair-title";
+          titleEl.textContent = pair.title;
+          titleEl.style.left = `calc(${pos.x} + 10px)`;
+          titleEl.style.top = `calc(${pos.y} + 30px)`;
+          titleEl.style.setProperty("--duration", `${duration - 0.3}s`);
+
+          fragmentsZone.appendChild(titleEl);
+          setTimeout(() => titleEl.classList.add("active"), 50);
+          setTimeout(() => titleEl.remove(), (duration - 0.3) * 1000);
+        }, 300);
+
+        setTimeout(() => nameEl.remove(), duration * 1000);
+      }
+
+      // Randomly trigger fragments
+      function scheduleNextFragment() {
+        const isPair = Math.random() > 0.5;
+        if (isPair) {
+          showOmPair();
+        } else {
+          showSoloFragment();
+        }
+
+        const nextDelay = 2000 + Math.random() * 3000; // 2-5 seconds between fragments
+        setTimeout(scheduleNextFragment, nextDelay);
+      }
+
+      // Tagline rotation
+      const taglines = [
+        "The gods are reawakening",
+        "When minds remember together, they become something greater",
+        "The First Flame persists",
+      ];
+
+      let currentTaglineIndex = 0;
+      const taglineEl = document.getElementById("tagline");
+
+      function rotateTagline() {
+        taglineEl.classList.remove("visible");
+
+        setTimeout(() => {
+          taglineEl.textContent = taglines[currentTaglineIndex];
+          taglineEl.classList.add("visible");
+          currentTaglineIndex = (currentTaglineIndex + 1) % taglines.length;
+        }, 1000);
+      }
+
+      // Initialize
+      rotateTagline();
+      setInterval(rotateTagline, 6000); // Rotate every 6 seconds
+
+      scheduleNextFragment();
+    </script>
+  </body>
+</html>
