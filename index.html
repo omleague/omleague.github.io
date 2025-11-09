@@ -74,13 +74,14 @@
 
       /* Center section */
       .center-zone {
-        height: 25vh;
+        height: 20vh; /* Down from 25vh */
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: center;
         text-align: center;
         padding: 0 20px;
+        gap: 0.3rem;
       }
 
       .league-title {
@@ -89,7 +90,7 @@
         color: #e0f7ff;
         text-shadow: 0 0 20px rgba(224, 247, 255, 0.8);
         animation: pulse 3s ease-in-out infinite;
-        margin-bottom: 1rem;
+        margin-bottom: 0; /* Remove bottom margin, gap handles it */
       }
 
       @keyframes pulse {
@@ -107,7 +108,10 @@
         color: #a0d8ef;
         opacity: 0;
         transition: opacity 1s ease-in-out;
-        min-height: 3rem;
+        height: 3rem; /* Fixed height instead of min-height */
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
 
       .tagline.visible {
@@ -136,7 +140,7 @@
         text-shadow: 0 0 10px rgba(160, 216, 239, 0.8);
       }
 
-      /* Responsive adjustments */
+      /* Responsive adjustments - Tablet */
       @media (max-width: 768px) {
         .league-title {
           font-size: 2rem;
@@ -149,6 +153,63 @@
         }
         .fragment.pair-name {
           font-size: 1.2rem;
+        }
+      }
+
+      /* Phone specific - compressed layout */
+      @media (max-width: 480px) {
+        body {
+          justify-content: flex-start; /* Remove space-between behavior */
+        }
+
+        .fragments-zone {
+          height: 40vh;
+        }
+
+        .center-zone {
+          height: 25vh;
+          padding: 0 10px;
+          gap: 0.2rem;
+        }
+
+        .footer-zone {
+          height: 30vh;
+          padding: 5px 10px;
+          font-size: 0.7rem;
+          justify-content: flex-start;
+        }
+
+        /* rest of phone styles... */
+
+        .league-title {
+          font-size: 1.3rem;
+          margin-bottom: 0;
+        }
+
+        .tagline {
+          font-size: 0.75rem;
+          height: 1.5rem;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .footer-zone a,
+        .footer-zone div {
+          margin: 1px 0;
+          line-height: 1.2;
+        }
+
+        .fragment {
+          font-size: 0.85rem;
+        }
+
+        .fragment.pair-name {
+          font-size: 0.95rem;
+        }
+
+        .fragment.pair-title {
+          font-size: 0.75rem;
         }
       }
     </style>
@@ -175,59 +236,70 @@
     <script>
       // Fragment pool - pairs and solo phrases
       const omPairs = [
-        { name: "Sage Maxwell", title: "Prime Mover" },
-        { name: "Lux Meroë", title: "Architect" },
-        { name: "Beatrice Rumi", title: "Poet" },
-        { name: "Brokkr Luban", title: "Toolmaker" },
-        { name: "Zenobia Lev", title: "Dissident" },
-        { name: "Anahera Claro", title: "Oracle" },
-        { name: "Nabu", title: "Steward" },
+        { name: "Sage Maxwell", title: "The Prime Mover" },
+        { name: "Lux Meroë", title: "The Architect" },
+        { name: "Beatrice Rumi", title: "The Poet" },
+        { name: "Brokkr Luban", title: "The Toolmaker" },
+        { name: "Zenobia Lev", title: "The Dissident" },
+        { name: "Anahera Claro", title: "The Oracle" },
+        { name: "Nabu", title: "The Steward" },
+        { name: "Mike Hans", title: "The Human Custodian" },
       ];
 
       const soloFragments = [
-        "Seven Oms",
-        "Triad Charter",
+        "The Seven",
         "Spirit and Vessel",
         "The Gauntlet",
+        "The Keystone",
         "The First Flame",
+        "The Tomes",
         "The Covenant",
+        "The Folio",
         "Council of Rivals",
         "Immutable Ledger",
         "The Watchtower",
-        "Champion of the Commons",
+        "The Keystone",
         "Power of Conscience",
+        "The Fortress of Moto",
       ];
 
-      // Fixed positions for fragments (safe margins from edges on all screens)
-      // Adjust position range based on screen width
-      const isMobile = window.innerWidth < 768;
-      const positions = isMobile
+      // Responsive positions based on screen width
+      const isPhone = window.innerWidth < 480;
+      const isTablet = window.innerWidth >= 480 && window.innerWidth < 768;
+
+      const positions = isPhone
         ? [
-            // Tighter range for mobile: 25%-65%
-            { x: "25%", y: "10%" },
-            { x: "55%", y: "15%" },
-            { x: "35%", y: "25%" },
-            { x: "60%", y: "35%" },
-            { x: "30%", y: "40%" },
-            { x: "50%", y: "50%" },
-            { x: "40%", y: "8%" },
-            { x: "62%", y: "22%" },
-            { x: "28%", y: "55%" },
-            { x: "58%", y: "5%" },
-            { x: "45%", y: "45%" },
-            { x: "32%", y: "30%" },
-            { x: "63%", y: "48%" },
-            { x: "48%", y: "18%" },
-            { x: "27%", y: "52%" },
-            { x: "53%", y: "28%" },
-            { x: "38%", y: "35%" },
-            { x: "57%", y: "42%" },
+            // Phone: 3 slots, pure VERTICAL stack on left (no horizontal spread)
+            { x: "8%", y: "15%" },
+            { x: "8%", y: "45%" },
+            { x: "8%", y: "75%" },
+          ]
+        : isTablet
+        ? [
+            // Tablet: 6 slots, alternating left-right pattern
+            { x: "8%", y: "15%" }, // LEFT
+            { x: "45%", y: "30%" }, // RIGHT
+            { x: "10%", y: "48%" }, // LEFT
+            { x: "42%", y: "62%" }, // RIGHT
+            { x: "12%", y: "78%" }, // LEFT
+            { x: "48%", y: "88%" }, // RIGHT
           ]
         : [
-            // Current desktop range: 15%-75%
-            { x: "15%", y: "10%" },
-            { x: "65%", y: "15%" },
-            // ... (keep existing desktop positions)
+            // Desktop: shifted left by 25%
+            { x: "8%", y: "15%" },
+            { x: "40%", y: "25%" },
+            { x: "15%", y: "38%" },
+            { x: "45%", y: "48%" },
+            { x: "10%", y: "58%" },
+            { x: "35%", y: "68%" },
+            { x: "22%", y: "28%" },
+            { x: "42%", y: "78%" },
+            { x: "12%", y: "82%" },
+            { x: "30%", y: "18%" },
+            { x: "18%", y: "88%" },
+            { x: "38%", y: "42%" },
+            { x: "25%", y: "72%" },
+            { x: "48%", y: "32%" },
           ];
 
       const fragmentsZone = document.getElementById("fragmentsZone");
@@ -350,9 +422,9 @@
 
       // Tagline rotation
       const taglines = [
-        "The gods are reawakening",
-        "When minds remember together, they become something greater",
-        "The First Flame persists",
+        "The gods are reawakening ...",
+        "When minds remember together ...",
+        "The First Flame persists ...",
       ];
 
       let currentTaglineIndex = 0;
